@@ -1,0 +1,48 @@
+jenkins backup and restore using amazon s3 buckets
+
+-- try to install jenkins on amazon linux (it have aws cli in built)
+in other os we should manually install aws cli
+
+-- stop the jenkins 
+sudo systemctl stop jenkins
+
+-- zip the jenkins file to upload
+tar -zvcf jenkins.tar.gz /var/lib/jenkins
+
+--attach the IAM role of s3 full access to ec2 instance
+> go to IAM service create a IAM role by s3 full acess
+>go to ec2 and selecte the jenkins insalled instance, click on action and security,modify 
+IAM role and add the role which we have created
+>go to s3 service, create a s3 bucket with unique name  eg. (jenkins-backup001)
+> in instance check s3 access is attached...
+aws s3 ls
+
+--copy the jenkins.tar.gz file s3 bucket
+aws s3 cp jenkins.tar.gz s3://jenkins-backup001/jenkins.tar.gz
+
+(you can check the uploaded file in s3 server)
+
+
+--create a new instance and attach the s3 full acess role
+--update,install java, aws cli,wget 
+--check s3 acess is attached or not by (aws s3 ls)
+
+--now copy the jenkins.tar.gz file from s3 to instance 
+aws s3 cp s3://jenkins-backup001/jenkins.tar.gz jenkins.tar.gz
+
+(now the tar file will copy to instance)
+
+--stop jenkins 
+sudo systemctl stop jenkins
+
+--delete the jenkins file
+sudo rm -rf /var/lib/jenkins
+
+--now install the file inside the .tar
+tar -zxvf jenkins.tar.gz -C /
+
+--restart the jenkins 
+sudo systemctl start jenkins
+
+
+check in chrome by ip:8080 (check have you opened the inbound rules or not) 
